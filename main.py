@@ -4,6 +4,8 @@ import numpy as np
 from psychopy import visual, core  # import some libraries from PsychoPy
 from psychopy.hardware import keyboard
 import random
+import csv
+
 
 def createStim(list_c, list_sf):
     x = (-2,2,2,-2)
@@ -49,9 +51,9 @@ repeated_c = []
 repeated_c_copy = []
 data = {}
 
-all_sf = np.linspace(0.1,1,10)
+all_sf = np.linspace(0.1,1,2)
 
-c = np.linspace(0,1,20)
+c = np.linspace(0,1,3)
 for i in range(N_times):
     repeated_c_copy = np.append(repeated_c_copy,c)
 
@@ -59,8 +61,7 @@ for rnd_sf in all_sf:
     
     repeated_c = repeated_c_copy
     while repeated_c.size:  
-        data[rnd_sf] = {'contrast_value':rnd_c,'user_answer':
-        }
+        
         rnd_c = float(random.choice(repeated_c))
         index_to_remove = np.argwhere(repeated_c == rnd_c)[0][0]
         repeated_c = np.delete(repeated_c, index_to_remove)
@@ -94,12 +95,18 @@ for rnd_sf in all_sf:
             if check_key == 'q':
                 core.quit()
                 break
-            data[rnd_sf] = {'contrast_value':rnd_c,'user_answer':check_key}
             
+            data[rnd_sf]["user_answer"].append(check_key)
+            data[rnd_sf]["contrast_value"].append(rnd_c)
+
             check_key = []
         mywin.update()
 
+print(data)
 
 
-
+with open("data_con.csv", "w", newline="") as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=data.keys())
+    writer.writeheader()
+    writer.writerow(data)
   
