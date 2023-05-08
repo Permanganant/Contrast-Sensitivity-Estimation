@@ -5,17 +5,10 @@ from psychopy import visual, core  # import some libraries from PsychoPy
 from psychopy.hardware import keyboard
 import random
 
-def createStim(rnd_c,rnd_sf):
+def createStim(list_c, list_sf):
     x = (-2,2,2,-2)
     y = (-2,-2,2,2)
     
-    list_c = [0,0,0,rnd_c]
-    list_sf = [1,1,1,rnd_sf]
-    
-    mapIndexPosition = list(zip(list_c, list_sf))
-    random.shuffle(mapIndexPosition)
-    
-    list_c, list_sf = zip(*mapIndexPosition)
     i = 0
     grating_1 = visual.GratingStim(win=mywin, mask="circle", size=3, pos=[x[i],y[i]],sf = list_sf[0],contrast = list_c[0])
     title_1 = visual.TextStim(win=mywin, text="1", pos=[-2, 4], height=1.0, color="black")
@@ -48,24 +41,43 @@ mywin = visual.Window([600,600], monitor="testMonitor", units="deg")
 log_contrast = np.array([])
 log_sf = np.array([])
 chosen_gratings = np.array([])
-
-
+j = 0
 keyList=['1', '2', '3', '4', 'q']
 keys = []
-n_repeat = 10 
-c_interval = 10 
-sf_interval = 10
-c = np.linspace(0,1,c_interval)
-rnd_c = float(random.choice(c))
-rnd_sf = np.linspace(0,1,sf_interval)
+N_times = 10
+repeated_c = []
+repeated_c_copy = []
+data = {}
 
-for r_sf in rnd_sf:
-    j = 0
-    while j < n_repeat: 
+all_sf = np.linspace(0.1,1,10)
+
+c = np.linspace(0,1,20)
+for i in range(N_times):
+    repeated_c_copy = np.append(repeated_c_copy,c)
+
+for rnd_sf in all_sf:
+    
+    repeated_c = repeated_c_copy
+    while repeated_c.size:  
+        data[rnd_sf] = {'contrast_value':rnd_c,'user_answer':
+        }
+        rnd_c = float(random.choice(repeated_c))
+        index_to_remove = np.argwhere(repeated_c == rnd_c)[0][0]
+        repeated_c = np.delete(repeated_c, index_to_remove)
+        print(len(repeated_c))
+        #rnd_sf = float(np.random.rand(1))
+        list_c = [0,0,0,rnd_c]
+        list_sf = [1,1,1,rnd_sf]
         
-        [sf,cont] = createStim(rnd_c,r_sf)
+        mapIndexPosition = list(zip(list_c, list_sf))
+        random.shuffle(mapIndexPosition)
+        
+        list_c, list_sf = zip(*mapIndexPosition)
+        
+        [sf,cont] = createStim(list_c, list_sf)
+        
         msg_1 = "Repeat: " + str(j)
-        msg_2 = "Spatial Freq: " + str(r_sf)
+        msg_2 = "Spatial Freq: " + str(rnd_sf)
         title_msg1 = visual.TextStim(win=mywin, text=msg_1, pos=[-3, 8], height=0.5, color="black")
         title_msg2 = visual.TextStim(win=mywin, text=msg_2, pos=[3, 8], height=0.5, color="black")
         title_msg1.draw()
@@ -73,32 +85,18 @@ for r_sf in rnd_sf:
         
         mywin.flip()
         
-        keys = event.waitKeys(keyList=['1', '2', '3', '4', 'q'])
+        keys = event.waitKeys(keyList=['y','n', 'q'])
         check_key = keys[0]
         
         if check_key in keyList:
             
             j = j + 1
-            if check_key == '1':
-                chosen_object = 'grating_1'
-                chosen_gratings = np.append(chosen_gratings, 1)
-            elif check_key == '2':
-                chosen_object = 'grating_2'
-                chosen_gratings = np.append(chosen_gratings, 2)
-            elif check_key == '3':
-                chosen_object = 'grating_3'
-                chosen_gratings = np.append(chosen_gratings, 3)
-            elif check_key == '4':
-                chosen_object = 'grating_4'
-                chosen_gratings = np.append(chosen_gratings, 4)
-            elif check_key == 'q':
+            if check_key == 'q':
                 core.quit()
                 break
+            data[rnd_sf] = {'contrast_value':rnd_c,'user_answer':check_key}
             
-            log_sf = np.append(log_sf,sf)
-            log_contrast = np.append(log_contrast,cont)
             check_key = []
-            
         mywin.update()
 
 
