@@ -5,6 +5,7 @@ from psychopy import visual, core  # import some libraries from PsychoPy
 from psychopy.hardware import keyboard
 import random
 import csv
+import pandas as pd
 
 
 def createStim(list_c, list_sf):
@@ -44,22 +45,27 @@ log_contrast = np.array([])
 log_sf = np.array([])
 chosen_gratings = np.array([])
 j = 0
-keyList=['1', '2', '3', '4', 'q']
+keyList=['y','n','q']
 keys = []
-N_times = 10
+N_times = 1
 repeated_c = []
 repeated_c_copy = []
-data = {}
+df_dict = {}
+all_sf = np.linspace(0.1,1,10)
+index = []
+c = np.linspace(0,1,10)
 
-all_sf = np.linspace(0.1,1,2)
-
-c = np.linspace(0,1,3)
 for i in range(N_times):
     repeated_c_copy = np.append(repeated_c_copy,c)
-
-for rnd_sf in all_sf:
     
+i = 0
+ans = []
+ctrs = []
+r_sf = []
+for rnd_sf in all_sf:
+    i = i + 1
     repeated_c = repeated_c_copy
+    
     while repeated_c.size:  
         
         rnd_c = float(random.choice(repeated_c))
@@ -83,30 +89,26 @@ for rnd_sf in all_sf:
         title_msg2 = visual.TextStim(win=mywin, text=msg_2, pos=[3, 8], height=0.5, color="black")
         title_msg1.draw()
         title_msg2.draw()
-        
         mywin.flip()
         
-        keys = event.waitKeys(keyList=['y','n', 'q'])
+        keys = event.waitKeys(keyList=['y','n','q'])
         check_key = keys[0]
         
         if check_key in keyList:
-            
+            print("flag")
             j = j + 1
             if check_key == 'q':
                 core.quit()
                 break
-            
-            data[rnd_sf]["user_answer"].append(check_key)
-            data[rnd_sf]["contrast_value"].append(rnd_c)
-
+            ans.append(check_key)
+            ctrs.append(rnd_c)
+            r_sf.append(rnd_sf)
+            index.append(j)
             check_key = []
+        df = pd.DataFrame ({'user_answer': ans, 'contrast_value': ctrs,'spatial_freq': r_sf},index)
+        
+        
         mywin.update()
+df.to_csv('my_data_df.csv', index=False)
 
-print(data)
-
-
-with open("data_con.csv", "w", newline="") as csvfile:
-    writer = csv.DictWriter(csvfile, fieldnames=data.keys())
-    writer.writeheader()
-    writer.writerow(data)
   
